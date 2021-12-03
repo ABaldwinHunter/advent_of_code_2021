@@ -56,59 +56,40 @@ puts "Answer is #{answer}"
 # if we converted all of the numbers to binary, we could also do this with modulo
 #
 
-nums = binary_numbers.map { |num| Binary.to_decimal(num) }
-
-# most common
-
-# modulo 2 to the 0th / if they're odd
-# modulo 2 to the first / if they're even
-# modulo 2 to the second / if they're divisible by 4
-# modulo 2 to the third / if they're divisible by 8
-#
-
-largest_power = binary_numbers.first.length - 1
-
-def get_rating(current_power, numbers_left, comparator)
-  puts "starting a round. numbers left count is #{numbers_left.count}"
-  puts "starting a round. current power is #{current_power}"
-  puts "numbers are"
-  pp numbers_left
+def get_rating(current_index, numbers_left, comparator)
   if numbers_left.count <= 1
     numbers_left.first # hooray!
-  elsif current_power > 10 || current_power < 0
-    [300]
   else
     numbers_with_1 = []
     numbers_with_0 = []
 
     numbers_left.each do |num|
-      if ((num % 2**current_power) == 0)
+      if num[current_index] == "1"
         numbers_with_1 << num
       else
         numbers_with_0 << num
       end
     end
 
-    new_power = current_power - 1
+    new_index = current_index + 1
 
     new_numbers_left = if numbers_with_1 == numbers_with_0
                          numbers_with_1
                        elsif (numbers_with_1.length).send(comparator, numbers_with_0.length)
-                         numbers_with_1.map { |num| num - 2**current_power }
+                         numbers_with_1
                        else
                          numbers_with_0
                        end
 
     puts "finished a round. numbers left count is #{new_numbers_left.count}"
-    pp numbers_left
-    puts "new power is #{new_power}"
-    get_rating(new_power, new_numbers_left, comparator)
+    puts "new power is #{new_index}"
+    get_rating(new_index, new_numbers_left, comparator)
   end
 end
 
-oxygen = get_rating(largest_power, nums, :>)
-scrubber = get_rating(largest_power, nums, :<)
+oxygen = get_rating(0, binary_numbers, :>)
+scrubber = get_rating(0, binary_numbers, :<)
 
-answer = oxygen * scrubber
+answer = Binary.to_decimal(oxygen) * Binary.to_decimal(scrubber)
 
 puts "answer for part 2 is #{answer}"
