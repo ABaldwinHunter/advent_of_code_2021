@@ -57,7 +57,7 @@ puts "Answer is #{answer}"
 #
 
 def get_rating(current_index, numbers_left, comparator)
-  if numbers_left.count <= 1
+  if numbers_left.count == 1
     numbers_left.first # hooray!
   else
     numbers_with_1 = []
@@ -100,3 +100,56 @@ puts "scrubber is #{scrubber.join}"
 answer = Binary.to_decimal(oxygen) * Binary.to_decimal(scrubber)
 
 puts "answer for part 2 is #{answer}"
+
+# part 2 another way - using numbers instead of string comparison
+
+def get_rating_v2(current_power_of_2, numbers_left, comparator)
+  if numbers_left.count == 1
+    numbers_left.first.first # hooray!
+  else
+    numbers_with_1 = []
+    numbers_with_0 = []
+
+    numbers_left.each do |num|
+      if (num.last - 2**current_power_of_2) >= 0
+        numbers_with_1 << num
+      else
+        numbers_with_0 << num
+      end
+    end
+
+    new_numbers_left = begin
+                         if numbers_with_1.count == numbers_with_0.count
+                           if comparator.to_s == '>'
+                             numbers_with_1.map { |tuple| [tuple.first, tuple.last - 2**current_power_of_2] } # preserve original number but cache where we are with power of two calculation
+                           else
+                             numbers_with_0
+                           end
+                         elsif (numbers_with_1.length).send(comparator, numbers_with_0.length)
+                           numbers_with_1.map { |tuple| [tuple.first, tuple.last - 2**current_power_of_2] } # preserve original number but cache
+                         else
+                           numbers_with_0
+                         end
+                       end
+
+    new_power = current_power_of_2 - 1
+
+    get_rating_v2(new_power, new_numbers_left, comparator)
+  end
+end
+
+biggest_power_of_two = binary_numbers.first.length - 1
+
+decimals = binary_numbers.map { |num| Binary.to_decimal(num) }
+
+decimals_with_amounts_left_after_power_of_two_subtraction = decimals.map { |num| [num, num] }
+
+oxygen = get_rating_v2(biggest_power_of_two, decimals_with_amounts_left_after_power_of_two_subtraction, :>)
+scrubber = get_rating_v2(biggest_power_of_two, decimals_with_amounts_left_after_power_of_two_subtraction, :<)
+
+puts "oxygen is #{oxygen}"
+puts "scrubber is #{scrubber}"
+
+answer = oxygen * scrubber
+
+puts "answer for part 2 v2 is #{answer}"
