@@ -69,6 +69,10 @@ nums = binary_numbers.map { |num| Binary.to_decimal(num) }
 largest_power = binary_numbers.first.length - 1
 
 def get_rating(current_power, numbers_left, comparator)
+  puts "starting a round. numbers left count is #{numbers_left.count}"
+  puts "starting a round. current power is #{current_power}"
+  puts "numbers are"
+  pp numbers_left
   if numbers_left.count <= 1
     numbers_left.first # hooray!
   elsif current_power > 10 || current_power < 0
@@ -78,18 +82,10 @@ def get_rating(current_power, numbers_left, comparator)
     numbers_with_0 = []
 
     numbers_left.each do |num|
-      if current_power == 0
-        if num.odd?
-          numbers_with_1 << num
-        else
-          numbers_with_0 << num
-        end
+      if ((num % 2**current_power) == 0)
+        numbers_with_1 << num
       else
-        if ((num % 2**current_power) == 0)
-          numbers_with_1 << num
-        else
-          numbers_with_0 << num
-        end
+        numbers_with_0 << num
       end
     end
 
@@ -98,7 +94,7 @@ def get_rating(current_power, numbers_left, comparator)
     new_numbers_left = if numbers_with_1 == numbers_with_0
                          numbers_with_1
                        elsif (numbers_with_1.length).send(comparator, numbers_with_0.length)
-                         numbers_with_1
+                         numbers_with_1.map { |num| num - 2**current_power }
                        else
                          numbers_with_0
                        end
