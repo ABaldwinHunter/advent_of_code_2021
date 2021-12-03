@@ -10,8 +10,8 @@ class Binary
   end
 end
 
-file = "sample.txt"
-# file = "input.txt"
+# file = "sample.txt"
+file = "input.txt"
 binary_numbers = File.read(file).split("\n").map { |num_string| num_string.split("") }
 
 half = binary_numbers.count / 2.0
@@ -73,22 +73,29 @@ def get_rating(current_index, numbers_left, comparator)
 
     new_index = current_index + 1
 
-    new_numbers_left = if numbers_with_1 == numbers_with_0
-                         numbers_with_1
-                       elsif (numbers_with_1.length).send(comparator, numbers_with_0.length)
-                         numbers_with_1
-                       else
-                         numbers_with_0
+    new_numbers_left = begin
+                         if numbers_with_1.count == numbers_with_0.count
+                           if comparator.to_s == '>'
+                             numbers_with_1
+                           else
+                             numbers_with_0
+                           end
+                         elsif (numbers_with_1.length).send(comparator, numbers_with_0.length)
+                           numbers_with_1
+                         else
+                           numbers_with_0
+                         end
                        end
 
-    puts "finished a round. numbers left count is #{new_numbers_left.count}"
-    puts "new power is #{new_index}"
     get_rating(new_index, new_numbers_left, comparator)
   end
 end
 
 oxygen = get_rating(0, binary_numbers, :>)
 scrubber = get_rating(0, binary_numbers, :<)
+
+puts "oxygen is #{oxygen.join}"
+puts "scrubber is #{scrubber.join}"
 
 answer = Binary.to_decimal(oxygen) * Binary.to_decimal(scrubber)
 
