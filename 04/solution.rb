@@ -20,9 +20,6 @@ boards = input.map do |text_block|
   row_set.map { |row| row.split(" ").map(&:to_i) }
 end
 
-puts "boards"
-pp boards
-
 # [
 #   [22, 13, 17, 11, 0],
 #    [8, 2, 23, 4, 24],
@@ -60,29 +57,76 @@ def final_score(board, last_called)
   nums_left.sum * last_called
 end
 
+# current_index = 0
+# final_score = nil
+
+# while final_score.nil?
+
+#   puts "boards"
+#   pp boards
+
+#   num = numbers[current_index]
+
+#   boards.each do |board|
+#     mark_board(board, num)
+
+#     if won?(board)
+#       puts "won!"
+
+#       pp board
+
+#       final_score = final_score(board, num)
+#     end
+#   end
+
+#   current_index += 1
+# end
+
+# puts "part 1:"
+# puts "final score is #{final_score}"
+
+# part 2 - which board will win last
+#
+
 current_index = 0
 final_score = nil
+to_delete = []
 
-while final_score.nil?
-
+while final_score.nil? do
   puts "boards"
   pp boards
 
   num = numbers[current_index]
 
-  boards.each do |board|
+  puts "num is #{num}"
+  puts "boards count is #{boards.count}"
+
+  to_delete = []
+
+  boards.each.with_index do |board, index|
     mark_board(board, num)
 
     if won?(board)
-      puts "won!"
+      if boards.length > 1
+        to_delete << board
+      else
+        final_score = final_score(board, num)
 
-      pp board
+        puts "finished!"
 
-      final_score = final_score(board, num)
+        pp final_score
+
+        puts "num is #{num}"
+        puts "board is"
+        pp board
+      end
     end
   end
+
+  to_delete.each { |marked_for_destruction| boards.delete(marked_for_destruction) }
 
   current_index += 1
 end
 
+puts "part 2"
 puts "final score is #{final_score}"
