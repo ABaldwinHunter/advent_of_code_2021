@@ -57,36 +57,36 @@ def final_score(board, last_called)
   nums_left.sum * last_called
 end
 
-# current_index = 0
-# final_score = nil
+ current_index = 0
+ final_score = nil
 
-# while final_score.nil?
+ while final_score.nil?
 
-#   puts "boards"
-#   pp boards
+   puts "boards"
+   pp boards
 
-#   num = numbers[current_index]
+   num = numbers[current_index]
 
-#   boards.each do |board|
-#     mark_board(board, num)
+   boards.each do |board|
+     mark_board(board, num)
 
-#     if won?(board)
-#       puts "won!"
+     if won?(board)
+       puts "won!"
 
-#       pp board
+       pp board
 
-#       final_score = final_score(board, num)
-#     end
-#   end
+       final_score = final_score(board, num)
+     end
+   end
 
-#   current_index += 1
-# end
+   current_index += 1
+ end
 
-# puts "part 1:"
-# puts "final score is #{final_score}"
+ puts "part 1:"
+ puts "final score is #{final_score}"
 
-# part 2 - which board will win last
-#
+ # part 2 - which board will win last
+
 
 current_index = 0
 final_score = nil
