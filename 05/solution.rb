@@ -13,8 +13,8 @@
 # going to startw with 2 because sounds a little faster
 #
 
-file = 'input.txt'
-# file = 'sample.txt'
+# file = 'input.txt'
+file = 'sample.txt'
 
 class Line
   attr_reader :start_x, :start_y, :finish_x, :finish_y
@@ -29,10 +29,15 @@ class Line
       @start_x = x1
       @finish_x = x2
       @start_y, @finish_y = [y1, y2].sort # to make comparisons easier later
-    else
+    elsif y1 == y2
       @start_y = y1
       @finish_y = y2
       @start_x, @finish_x = [x1, x2].sort
+    else
+      @start_x = x1
+      @start_y = y1
+      @finish_x = x2
+      @finish_y = y2
     end
   end
 
@@ -44,12 +49,85 @@ class Line
     start_y == finish_y
   end
 
+  def diagonal?
+    !horizontal? && !vertical?
+  end
+
+  def ==(line)
+    start_x == line.start_x &&
+      start_y == line.start_y &&
+      finish_x == line.finish_x &&
+      finish_y == line.finish_y
+  end
+
+  # only for vertical
   def intersection(horizontal_line)
     if intersect?(horizontal_line)
       [start_x, horizontal_line.start_y]
     else
       nil
     end
+  end
+
+  def intersections(line)
+    puts "in intersection;"
+    puts "line points are"
+    pp points
+
+    puts "other line points are"
+    pp line.points
+
+    points.select { |point| line.points.include? point }
+  end
+
+  # when self is diagonal
+  def minimum_requirement_for_intersect?(line)
+    if line.vertical?
+      (smallest_x <= line.start_x && biggest_x >= line.start_x)
+    elsif line.horizontal?
+      (smallest_y <= line.start_y && biggest_y >= line.start_y)
+    elsif line.diagonal
+      true # tbd
+    end
+  end
+
+  def biggest_x
+    @biggest_x ||= [start_x, finish_x].max
+  end
+
+  def biggest_y
+    @biggest_y ||= [start_y, finish_y].max
+  end
+
+  def smallest_x
+    @smallest_x ||= [start_x, finish_x].min
+  end
+
+  def smallest_y
+    @smallest_y ||= [start_y, finish_y].min
+  end
+
+  def points
+    @points ||= begin
+                  _points = []
+
+                  change_in_y = (finish_y - start_y)
+                  change_in_x =  (finish_x - start_x)
+
+                  change_in_y = (change_in_y / change_in_x)
+                  change_in_x = 1
+
+                  x = start_x
+                  y = start_y
+
+                  while ((x - change_in_x) != finish_x || (y - change_in_y) != finish_y) do
+                    _points << [x,y]
+
+                    x += change_in_x
+                    y += change_in_y
+                  end
+                end
+    _points
   end
 
   def to_s
@@ -166,3 +244,74 @@ puts "points"
 pp points
 
 puts "intersections count is #{points.count}"
+
+# part 2 - include diagonals
+#
+# iterate over diagonal lines and see if
+# any intersect with other diagonal lines
+# any intersect with the vertical and horizontal lines
+
+diagonal_lines = lines.select(&:diagonal?)
+
+already_checked_diag = []
+
+puts "vertical lines count = #{vertical_lines.count}"
+puts "horizontal lines count = #{horizontal_lines.count}"
+puts "diagonal lines count = #{diagonal_lines.count}"
+
+so_far = 0
+
+diagonal_lines.each do |d|
+  puts "*"*100
+  puts "diag lines so far: #{so_far}/#{diagonal_lines.count}"
+  vertical_lines.each do |v|
+    next unless d.minimum_requirement_for_intersect?(v)
+
+    i = d.intersections(v)
+
+    if i.any?
+      puts "found intersection"
+      pp i
+
+      points += i
+    end
+  end
+
+  horizontal_lines.each do |h|
+    next unless d.minimum_requirement_for_intersect?(h)
+
+    i = d.intersections(h)
+
+    if i.any?
+      puts "found intersection"
+      pp i
+
+      points += i
+    end
+  end
+
+  diagonal_lines.each do |d2|
+    puts "another diag line"
+    next if d == d2
+    key = [[d.start_x, d.start_y], [d2.start_x, d2.start_y]].sort.to_s
+
+    next if already_checked_diag.include? key
+
+    i = d.intersections(d2)
+
+    if i.any?
+      puts "found intersection"
+      pp i
+
+      points += i
+    end
+
+    already_checked_diag << key
+  end
+
+  so_far += 1
+end
+
+puts "total points for part 2 = #{points.uniq.count}"
+
+pp points.uniq
