@@ -13,8 +13,8 @@
 # going to startw with 2 because sounds a little faster
 #
 
-# file = 'input.txt'
-file = 'sample.txt'
+file = 'input.txt'
+# file = 'sample.txt'
 
 class Line
   attr_reader :start_x, :start_y, :finish_x, :finish_y
@@ -49,9 +49,19 @@ class Line
       (start_x > line.start_x) && (start_x < line.finish_x)
     end
   end
+
+  def to_s
+    "#{start_x},#{start_y} => #{finish_x},#{finish_y}"
+  end
 end
 
 lines = File.read(file).split("\n").map { |line_string| Line.new(line_string) }
+
+puts "lines"
+
+lines.each do |line|
+  puts line.to_s
+end
 
 # count intersections
 #
@@ -72,14 +82,15 @@ end
 
 # count lines that overlap and are both veritcal or both horizontal
 
-already_counted = []
+already_counted_vertical = []
 
 vertical_lines.each do |v|
   vertical_lines.each do |v2|
     next unless v.start_x == v2.start_x
+    next if v.finish_x == v2.finish_x
 
     key = [[v.start_x, v.start_y], [v2.start_x, v2.start_y]].sort.to_s
-    next if already_counted.include? key
+    next if already_counted_vertical.include? key
 
     overlap_start = [v.start_y, v2.start_y].max
     overlap_end = [v.finish_y, v2.finish_y].min
@@ -88,16 +99,29 @@ vertical_lines.each do |v|
 
     intersections_count += points
 
-    already_counted << key
+    already_counted_vertical << key
   end
 end
+
+already_counted_horizontal = []
 
 horizontal_lines.each do |h|
   horizontal_lines.each do |h2|
     next unless h.start_y == h2.start_y
+    next if h.finish_x == h2.finish_x
 
     key = [[h.start_x, h.start_y], [h2.start_x, h2.start_y]].sort.to_s
-    next if already_counted.include? key
+
+    puts "key = [[v.start_x, v.start_y], [v2.start_x, v2.start_y]].sort.to_s"
+
+    puts "key"
+    pp key
+
+    puts "h1"
+    pp h
+    puts "h2"
+    pp h2
+    next if already_counted_horizontal.include? key
 
     overlap_start = [h.start_x, h2.start_x].max
     overlap_end = [h.finish_x, h2.finish_x].min
@@ -106,8 +130,14 @@ horizontal_lines.each do |h|
 
     intersections_count += points
 
-    already_counted << key
+    already_counted_horizontal << key
   end
 end
+
+puts "already counted vertical"
+pp already_counted_vertical
+
+puts "already counted horizontal"
+pp already_counted_horizontal
 
 puts "intersections count is #{intersections_count}"
