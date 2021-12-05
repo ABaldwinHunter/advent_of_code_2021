@@ -69,15 +69,79 @@ class Line
     end
   end
 
-  def intersections(line)
-    puts "in intersection;"
-    puts "line points are"
-    pp points
+  def delta_y
+    @delta_y = finish_y - start_y
+  end
 
-    puts "other line points are"
-    pp line.points
+  def delta_x
+    @delta_x = finish_x - start_x
+  end
 
-    points.select { |point| line.points.include? point }
+  def slope
+    @slope ||= delta_y / delta_x.to_f
+  end
+
+  def b
+    if instance_variable_defined?("@b")
+      @b
+    else
+      @b = if vertical?
+             nil
+           elsif horizontal?
+             start_y
+           else
+             # y = mx + b
+             # start_y = (slope * start_x) + b
+             start_y - (slope * start_x)
+           end
+    end
+  end
+
+  def y_equals(x)
+    # "y = #{slope}x + b"
+
+    slope * x + b
+  end
+
+  def x_equals(y)
+    # y = mx + b"
+    # y - b = mx
+    #
+    # (y - b) / m = x
+    #
+    if slope != 0
+      (y - b) / slope
+    end
+  end
+
+  def include?(point)
+    y_range.include?(point.last) && x_range.include?(point.first)
+  end
+
+  def find_intersection(line)
+    point = find_inifinte_line_intersection(line)
+
+    if include?(point) && line.include?(point)
+      point
+    else
+      [nil, nil]
+    end
+  end
+
+  def find_inifinte_line_intersection(line) # when line slopes are not same
+    result = if line.horizontal?
+               [x_equals(line.start_y), line.start_y]
+             elsif line.vertical?
+               [line.start_x, y_equals(line.start_x)]
+             else
+               find_diagonal_by_diagonal_intersection(line)
+             end
+
+    result
+  end
+
+  def to_s
+    "#{start_x},#{start_y} => #{finish_x},#{finish_y}"
   end
 
   # when self is diagonal
@@ -87,7 +151,29 @@ class Line
     elsif line.horizontal?
       (smallest_y <= line.start_y && biggest_y >= line.start_y)
     elsif line.diagonal
-      true # tbd
+      y_range.overlaps?(line.y_range) && x_range.overlaps?(line.x_range)
+    end
+  end
+
+  private
+
+  def find_diagonal_by_diagonal_intersection(line) # assume self and line are both diagonal
+    x = (b - line.b) / (line.slope - slope)
+
+    [x, y_equals(x)]
+  end
+
+  def y_range
+    smallest_y..biggest_y
+  end
+
+  def x_range
+    smallest_x..biggest_x
+  end
+
+  def intersect?(line)
+    if vertical? && line.horizontal?
+      (start_x >= line.start_x) && (start_x <= line.finish_x) && (line.start_y >= start_y && line.start_y <= finish_y)
     end
   end
 
@@ -105,41 +191,6 @@ class Line
 
   def smallest_y
     @smallest_y ||= [start_y, finish_y].min
-  end
-
-  def points
-    @points ||= begin
-                  _points = []
-
-                  change_in_y = (finish_y - start_y)
-                  change_in_x =  (finish_x - start_x)
-
-                  change_in_y = (change_in_y / change_in_x)
-                  change_in_x = 1
-
-                  x = start_x
-                  y = start_y
-
-                  while ((x - change_in_x) != finish_x || (y - change_in_y) != finish_y) do
-                    _points << [x,y]
-
-                    x += change_in_x
-                    y += change_in_y
-                  end
-                end
-    _points
-  end
-
-  def to_s
-    "#{start_x},#{start_y} => #{finish_x},#{finish_y}"
-  end
-
-  private
-
-  def intersect?(line)
-    if vertical? && line.horizontal?
-      (start_x >= line.start_x) && (start_x <= line.finish_x) && (line.start_y >= start_y && line.start_y <= finish_y)
-    end
   end
 end
 
@@ -267,26 +318,34 @@ diagonal_lines.each do |d|
   vertical_lines.each do |v|
     next unless d.minimum_requirement_for_intersect?(v)
 
-    i = d.intersections(v)
+    point = d.find_intersection(v)
 
-    if i.any?
-      puts "found intersection"
-      pp i
+    if point.all? { |num| (num.is_a?(Integer) || num.is_a?(Float)) && ![Float::INFINITY, -Float::INFINITY].include?(num) }
+      sup = point.map(&:to_i)
 
-      points += i
+      if sup == [2,6]
+        require 'pry'; binding.pry
+        points << sup
+      else
+        points << sup
+      end
     end
   end
 
   horizontal_lines.each do |h|
     next unless d.minimum_requirement_for_intersect?(h)
 
-    i = d.intersections(h)
+    point = d.find_intersection(h)
 
-    if i.any?
-      puts "found intersection"
-      pp i
+    if point.all? { |num| (num.is_a?(Integer) || num.is_a?(Float)) && ![Float::INFINITY, -Float::INFINITY].include?(num) }
+      sup = point.map(&:to_i)
 
-      points += i
+      if sup == [2,6]
+        require 'pry'; binding.pry
+        points << sup
+      else
+        points << sup
+      end
     end
   end
 
@@ -297,13 +356,17 @@ diagonal_lines.each do |d|
 
     next if already_checked_diag.include? key
 
-    i = d.intersections(d2)
+    point = d.find_intersection(d2)
 
-    if i.any?
-      puts "found intersection"
-      pp i
+    if point.all? { |num| (num.is_a?(Integer) || num.is_a?(Float)) && ![Float::INFINITY, -Float::INFINITY].include?(num) }
+      sup = point.map(&:to_i)
 
-      points += i
+      if sup == [2,6]
+        require 'pry'; binding.pry
+        points << sup
+      else
+        points << sup
+      end
     end
 
     already_checked_diag << key
