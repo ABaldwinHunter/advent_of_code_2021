@@ -44,14 +44,24 @@ class Line
     start_y == finish_y
   end
 
-  def intersect?(line)
-    if vertical? && line.horizontal?
-      (start_x > line.start_x) && (start_x < line.finish_x)
+  def intersection(horizontal_line)
+    if intersect?(horizontal_line)
+      [start_x, horizontal_line.start_y]
+    else
+      nil
     end
   end
 
   def to_s
     "#{start_x},#{start_y} => #{finish_x},#{finish_y}"
+  end
+
+  private
+
+  def intersect?(line)
+    if vertical? && line.horizontal?
+      (start_x >= line.start_x) && (start_x <= line.finish_x) && (line.start_y >= start_y && line.start_y <= finish_y)
+    end
   end
 end
 
@@ -70,12 +80,17 @@ vertical_lines = lines.select(&:vertical?)
 
 horizontal_lines = lines.select(&:horizontal?)
 
-intersections_count = 0
+intersection_points = []
 
 vertical_lines.each do |v|
   horizontal_lines.each do |h|
-    if v.intersect?(h)
-      intersections_count += 1
+    if (point = v.intersection(h))
+
+      puts "inserting point from intersection"
+      pp point
+      puts "and the vertical line was #{v.to_s}"
+      puts "and the horizontal line was #{h.to_s}"
+      intersection_points << point
     end
   end
 end
@@ -87,7 +102,7 @@ already_counted_vertical = []
 vertical_lines.each do |v|
   vertical_lines.each do |v2|
     next unless v.start_x == v2.start_x
-    next if v.finish_x == v2.finish_x
+    next if (v.finish_y == v2.finish_y) && (v.start_y == v2.start_y)
 
     key = [[v.start_x, v.start_y], [v2.start_x, v2.start_y]].sort.to_s
     next if already_counted_vertical.include? key
@@ -95,9 +110,11 @@ vertical_lines.each do |v|
     overlap_start = [v.start_y, v2.start_y].max
     overlap_end = [v.finish_y, v2.finish_y].min
 
-    points = overlap_end - overlap_start
-
-    intersections_count += points
+    (overlap_start..overlap_end).each do |num|
+      puts "inserting point"
+      pp [v.start_x, num]
+      intersection_points << [v.start_x, num]
+    end
 
     already_counted_vertical << key
   end
@@ -108,7 +125,7 @@ already_counted_horizontal = []
 horizontal_lines.each do |h|
   horizontal_lines.each do |h2|
     next unless h.start_y == h2.start_y
-    next if h.finish_x == h2.finish_x
+    next if (h.finish_x == h2.finish_x) && (h.start_x == h2.start_x)
 
     key = [[h.start_x, h.start_y], [h2.start_x, h2.start_y]].sort.to_s
 
@@ -126,9 +143,11 @@ horizontal_lines.each do |h|
     overlap_start = [h.start_x, h2.start_x].max
     overlap_end = [h.finish_x, h2.finish_x].min
 
-    points = overlap_end - overlap_start
-
-    intersections_count += points
+    (overlap_start..overlap_end).each do |num|
+      puts "inserting point"
+      pp [num, h.start_y]
+      intersection_points << [num, h.start_y]
+    end
 
     already_counted_horizontal << key
   end
@@ -140,4 +159,10 @@ pp already_counted_vertical
 puts "already counted horizontal"
 pp already_counted_horizontal
 
-puts "intersections count is #{intersections_count}"
+points = intersection_points.uniq.sort
+
+puts "points"
+
+pp points
+
+puts "intersections count is #{points.count}"
