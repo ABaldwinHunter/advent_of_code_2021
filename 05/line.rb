@@ -24,11 +24,11 @@ class Line
   end
 
   def vertical?
-    start_x == finish_x
+    delta_x == 0
   end
 
   def horizontal?
-    start_y == finish_y
+    slope == 0
   end
 
   def diagonal?
