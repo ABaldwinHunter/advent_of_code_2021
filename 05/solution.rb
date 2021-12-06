@@ -20,6 +20,7 @@ end
 
 vertical_lines = lines.select(&:vertical?)
 horizontal_lines = lines.select(&:horizontal?)
+
 intersection_points = []
 
 vertical_lines.each do |v|
@@ -79,6 +80,8 @@ points = intersection_points.uniq
 
 puts "part 1 intersections count is #{points.count}"
 
+part_one_points = points.count
+
 # part 2 - include diagonals
 #
 diagonal_lines = lines.select(&:diagonal?)
@@ -88,13 +91,13 @@ diagonal_lines.each do |d|
   vertical_lines.each do |v|
     point = d.find_intersection(v)
 
-    points << point if point
+    intersection_points << point if point
   end
 
   horizontal_lines.each do |h|
     point = d.find_intersection(h)
 
-    points << point if point
+    intersection_points << point if point
   end
 
   diagonal_lines.each do |d2|
@@ -111,10 +114,10 @@ diagonal_lines.each do |d|
       puts "overlap"
       pp overlap
 
-      points += overlap
+      intersection_points += overlap
     else
       point = d.find_intersection(d2)
-      points << point if point
+      intersection_points << point if point
     end
   end
 end
@@ -126,5 +129,7 @@ end
 # recent guess 23368
 # 23370
 
-puts "total points for part 2 = #{points.uniq.count}"
-# pp points.uniq
+puts "total points for part 2 = #{intersection_points.uniq.count}"
+pp points.count
+
+puts "part one points = #{part_one_points}"
