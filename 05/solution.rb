@@ -77,11 +77,7 @@ end
 
 points = intersection_points.uniq
 
-puts "points"
-
-pp points
-
-puts "intersections count is #{points.count}"
+puts "part 1 intersections count is #{points.count}"
 
 # part 2 - include diagonals
 #
@@ -92,21 +88,13 @@ diagonal_lines.each do |d|
   vertical_lines.each do |v|
     point = d.find_intersection(v)
 
-    if point.all? { |num| (num.is_a?(Integer) || num.is_a?(Float)) && ![Float::INFINITY, -Float::INFINITY].include?(num) }
-      sup = point.map(&:to_i)
-
-      points << sup
-    end
+    points << point if point
   end
 
   horizontal_lines.each do |h|
     point = d.find_intersection(h)
 
-    if point.all? { |num| (num.is_a?(Integer) || num.is_a?(Float)) && ![Float::INFINITY, -Float::INFINITY].include?(num) }
-      sup = point.map(&:to_i)
-
-      points << sup
-    end
+    points << point if point
   end
 
   diagonal_lines.each do |d2|
@@ -126,12 +114,7 @@ diagonal_lines.each do |d|
       points += overlap
     else
       point = d.find_intersection(d2)
-
-      if point.all? { |num| (num.is_a?(Integer) || num.is_a?(Float)) && ![Float::INFINITY, -Float::INFINITY].include?(num) }
-        sup = point.map(&:to_i)
-
-        points << sup
-      end
+      points << point if point
     end
   end
 end
@@ -141,5 +124,7 @@ end
 # recent guess 24,236
 
 # recent guess 23368
+# 23370
 
 puts "total points for part 2 = #{points.uniq.count}"
+# pp points.uniq
