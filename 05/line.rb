@@ -171,4 +171,3 @@ class Line
     end
   end
 end
-
