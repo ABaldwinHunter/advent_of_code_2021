@@ -16,10 +16,17 @@ class Line
       @finish_y = y2
       @start_x, @finish_x = [x1, x2].sort
     else
-      @start_x = x1
-      @start_y = y1
-      @finish_x = x2
-      @finish_y = y2
+      @start_x = [x1, x2].min
+      @finish_x = [x1, x2].max
+
+      if @start_x == x2
+        @start_y = y2
+
+        @finish_y = y1
+      else
+        @finish_y = y2
+        @start_y = y1
+      end
     end
   end
 
@@ -76,6 +83,7 @@ class Line
     # "y = #{slope}x + b"
 
     if vertical?
+      raise "shouldn't have gotten here"
       Float::INFINITY
     else
       (slope * x) + b
@@ -88,34 +96,34 @@ class Line
     #
     # (y - b) / m = x
     #
-    if slope != 0
-      (y - b) / slope.to_f
-    else
-      Float::INFINITY
-    end
+    (y - b) / slope.to_f
   end
 
   def include?(point)
-    if point.all? { |num| (num.is_a?(Integer) || num.is_a?(Float)) && ![Float::INFINITY, -Float::INFINITY].include?(num) }
-      y_range.cover?(point.last.to_i) && x_range.cover?(point.first.to_i)
+    raise "non int" if point.any? { [Float::INFINITY, -Float::INFINITY].include?(num) }
+
+    if y_range.cover?(point.last.to_i) && x_range.cover?(point.first.to_i)
+    # if (smallest_y <= point.last.to_i) && (biggest_y >= point.last.to_i) && x_range.cover?(point.first.to_i)
     else
       false
     end
   end
 
   def find_intersection(line)
-    point = find_inifinte_line_intersection(line)
+    point = find_infinite_line_intersection(line)
 
     if include?(point) && line.include?(point)
       point.map(&:to_i)
     end
   end
 
-  def find_inifinte_line_intersection(line) # when line slopes are not same
+  def find_infinite_line_intersection(line) # when line slopes are not same
+    raise "slopes should not be same" if line.slope == slope
+
     if line.horizontal?
-      [x_equals(line.start_y), line.start_y]
+      [x_equals(line.start_y).to_i, line.start_y]
     elsif line.vertical?
-      [line.start_x, y_equals(line.start_x)]
+      [line.start_x, y_equals(line.start_x).to_i]
     else
       find_diagonal_by_diagonal_intersection(line)
     end

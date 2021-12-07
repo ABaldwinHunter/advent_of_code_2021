@@ -4,9 +4,10 @@
 #
 require_relative './line.rb'
 
-file = 'input.txt'
-# file = 'sample.txt'
+# file = 'input.txt'
+file = 'sample.txt'
 # file = 'sample_two.txt'
+# file = 'sample_three.txt'
 
 lines = File.read(file).split("\n").map { |line_string| Line.new(line_string) }
 
