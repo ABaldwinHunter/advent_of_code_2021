@@ -21,7 +21,6 @@ class Line
 
       if @start_x == x2
         @start_y = y2
-
         @finish_y = y1
       else
         @finish_y = y2
@@ -74,6 +73,8 @@ class Line
       @b = if vertical?
              nil
            else
+             # y = mx + b
+             # b = y - mx
              start_y - (slope * start_x)
            end
     end
@@ -100,7 +101,7 @@ class Line
   end
 
   def include?(point)
-    raise "non int" if point.any? { [Float::INFINITY, -Float::INFINITY].include?(num) }
+    raise "non int" if point.any? { |num| [Float::INFINITY, -Float::INFINITY].include?(num) }
 
     if y_range.cover?(point.last.to_i) && x_range.cover?(point.first.to_i)
     # if (smallest_y <= point.last.to_i) && (biggest_y >= point.last.to_i) && x_range.cover?(point.first.to_i)
@@ -110,10 +111,14 @@ class Line
   end
 
   def find_intersection(line)
-    point = find_infinite_line_intersection(line)
+    if line.horizontal? || line.vertical?
+      point = find_infinite_line_intersection(line)
 
-    if include?(point) && line.include?(point)
-      point.map(&:to_i)
+      if include?(point) && line.include?(point)
+        point.map(&:to_i)
+      end
+    else
+      find_diagonal_by_diagonal_intersection(line)
     end
   end
 
@@ -142,11 +147,11 @@ class Line
   end
 
   def x_range
-    ((smallest_x)..(biggest_x))
+    (start_x..finish_x)
   end
 
   def y_range
-    ((smallest_y)..(biggest_y))
+    (smallest_y)..(biggest_y)
   end
 
   def biggest_x
@@ -165,12 +170,14 @@ class Line
     @smallest_y ||= [start_y, finish_y].min
   end
 
+  def diagonal_points
+    @diagonal_points ||= x_range.map { |x| [x, y_equals(x).to_i] }
+  end
+
   private
 
   def find_diagonal_by_diagonal_intersection(line) # assume self and line are both diagonal
-    x = (b - line.b) / (line.slope - slope)
-
-    [x, y_equals(x)]
+    diagonal_points.select { |point| line.diagonal_points.include? point }.first
   end
 
   def intersect?(line)

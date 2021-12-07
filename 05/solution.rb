@@ -4,8 +4,8 @@
 #
 require_relative './line.rb'
 
-# file = 'input.txt'
-file = 'sample.txt'
+file = 'input.txt'
+# file = 'sample.txt'
 # file = 'sample_two.txt'
 # file = 'sample_three.txt'
 
@@ -104,20 +104,12 @@ diagonal_lines.each do |d|
   diagonal_lines.each do |d2|
     next if d == d2
 
-    if (d.slope == d2.slope) && d.b == d2.b
-      puts "*"*100
-      puts "same slope and b"
-      pp d
-      pp d2
-
+    if (d.slope == d2.slope) && d.b.to_f == d2.b.to_f
       overlap = d.find_overlapping_diagonal_points(d2)
-
-      puts "overlap"
-      pp overlap
-
       intersection_points += overlap
     else
       point = d.find_intersection(d2)
+
       intersection_points << point if point
     end
   end
@@ -131,6 +123,6 @@ end
 # 23370
 
 puts "total points for part 2 = #{intersection_points.uniq.count}"
-pp points.count
+pp intersection_points.uniq.count
 
-puts "part one points = #{part_one_points}"
+# puts "part one points = #{part_one_points}"
