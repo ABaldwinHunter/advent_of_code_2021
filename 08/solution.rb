@@ -63,7 +63,7 @@ class Decoder
     8 => ["a", "b", "c" "d", "e", "f", "g"],
     9 => ["a", "b", "c" "d", "f", "g"],
   }
-  POSSIBILITIES = {
+  DEFAULT_POSSIBILITIES = {
     # where left side is the true number, and right is the coded version
     "a" => ["a", "b", "c", "d", "e", "f", "g"],
     "b" => ["a", "b", "c", "d", "e", "f", "g"],
@@ -91,6 +91,7 @@ class Decoder
 
     @pattern_digits = pattern.split(" ").map { |num| num.split("") }
 
+    # binding.pry
     decode!
   end
 
@@ -99,12 +100,24 @@ class Decoder
     output_nums.map { |num| decode(num) }.sum
   end
 
+  def possibilities_map
+    @possibilities_map ||= {
+      "a" => ["a", "b", "c", "d", "e", "f", "g"],
+      "b" => ["a", "b", "c", "d", "e", "f", "g"],
+      "c" => ["a", "b", "c", "d", "e", "f", "g"],
+      "d" => ["a", "b", "c", "d", "e", "f", "g"],
+      "e" => ["a", "b", "c", "d", "e", "f", "g"],
+      "f" => ["a", "b", "c", "d", "e", "f", "g"],
+      "g" => ["a", "b", "c", "d", "e", "f", "g"],
+    }
+  end
+
   private
 
   def decode!
-    while POSSIBILITIES.values.any? { |possibilities| possibilities.count > 1 }
+    while possibilities_map.values.any? { |possibilities| possibilities.count > 1 }
       puts "current possibilities"
-      pp POSSIBILITIES
+      pp possibilities_map
 
       pattern_digits.each do |coded_digit|
         number_possibilities = Array(deduce_number(coded_digit)) #ensure array
@@ -112,12 +125,12 @@ class Decoder
         letter_possibilities = number_possibilities.flat_map { |num| DIGITS_TO_SEGMENT_GROUPS[num] }
 
         coded_digit.each do |letter|
-          current_possibilities = POSSIBILITIES[letter]
+          current_possibilities = possibilities_map[letter]
 
           current_possibilities.each do |possibility|
             if !letter_possibilities.include?(possibility)
               # remove because not possible
-              POSSIBILITIES[letter].delete(possibility)
+              possibilities_map[letter].delete(possibility)
             end
           end
         end
@@ -147,14 +160,14 @@ class Decoder
 
 
   def already_decoded?(number)
-    DIGITS_TO_SEGMENT_GROUPS[number].all? { |letter| POSSIBILITIES[letter].length == 1 }
+    DIGITS_TO_SEGMENT_GROUPS[number].all? { |letter| possibilities_map[letter].length == 1 }
   end
 
   def could_be?(coded_digit, num)
     true_segment_letters = DIGITS_TO_SEGMENT_GROUPS[num]
 
     fuzzy_letter_groups = coded_digit.map do |letter|
-      POSSIBILITIES[letter]
+      possibilities_map[letter]
     end
 
     buckets_could_cover_letters?(fuzzy_letter_groups, true_segment_letters)
@@ -177,10 +190,10 @@ class Decoder
       false
     elsif (bucket_values_wth_one = could_be_bucket_map.select { |k, v| v.length == 1 }.map { |k, v| v }).length != bucket_values_wth_one.uniq.length
       false
-    elsif (bucket_values_wth_two = could_be_bucket_map.select { |k, v| v.length == 2 }.map { |k, v| v }).length != (bucket_values_wth_two.uniq.length - 1)
-      false
-    elsif (bucket_values_wth_three = could_be_bucket_map.select { |k, v| v.length == 3 }.map { |k, v| v }).length != (bucket_values_wth_three.uniq.length - 2)
-      false
+    # elsif (bucket_values_wth_two = could_be_bucket_map.select { |k, v| v.length == 2 }.map { |k, v| v }).length != (bucket_values_wth_two.uniq.length - 1)
+    #   false
+    # elsif (bucket_values_wth_three = could_be_bucket_map.select { |k, v| v.length == 3 }.map { |k, v| v }).length != (bucket_values_wth_three.uniq.length - 2)
+    #   false
     else
       true
     end
@@ -188,8 +201,8 @@ class Decoder
 
   def decode(coded_digit)
     translated = coded_digit.map do |letter|
-      if POSSIBILITIES[letter].count == 1
-        POSSIBILITIES[letter].first
+      if possibilities_map[letter].count == 1
+        possibilities_map[letter].first
       end
     end
 
