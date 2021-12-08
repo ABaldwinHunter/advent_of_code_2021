@@ -1,3 +1,5 @@
+require 'pry'
+#
 # day 5 - do-over
 
 # counting vertical lines only
@@ -48,33 +50,68 @@ class Line
   end
 
   def points
-    if vertical?
-      Array(y1..y2).map { |y| [x1, y] }
-    elsif horizontal?
-      Array(x1..x2).map { |x| [x, y1] }
-    else
-      _points = []
+    _points = []
 
-      current_x = x1
+    if vertical?
       current_y = y1
 
-      while current_x != x2
-        _points << [current_x, current_y]
-
-        if x_decreasing?
-          current_x -= 1
-        else
-          current_x += 1
-        end
-
-        if y_decreasing?
+      if y_decreasing?
+        while current_y >= y2
+          _points << [x1, current_y]
           current_y -= 1
-        else
+        end
+      else
+        while y1 <= y2
+          _points << [x1, current_y]
           current_y += 1
         end
       end
-      _points
+    elsif horizontal?
+      current_x = x1
+
+      if x_decreasing?
+        while current_x >= x2
+          _points << [current_x, y1]
+          current_x -= 1
+        end
+      else
+        while current_x <= x2
+          _points << [current_x, y1]
+          current_x += 1
+        end
+      end
+    else
+      current_x = x1
+      current_y = y1
+
+      if x_decreasing?
+        while current_x >= x2
+          _points << [current_x, current_y]
+          current_x -= 1
+
+          if y_decreasing?
+            current_y -= 1
+          else
+            current_y += 1
+          end
+        end
+
+      else
+        while current_x <= x2
+          _points << [current_x, current_y]
+          current_x += 1
+
+          if y_decreasing?
+            current_y -= 1
+          else
+            current_y += 1
+          end
+        end
+      end
+
     end
+
+    _points
   end
 end
 
@@ -93,10 +130,10 @@ part_one_lines = lines.select { |line| line.vertical? || line.horizontal? }
 
 points_map = {}
 
-require 'pry'; binding.pry
-
 part_one_lines.each do |line|
+  print "I"
   line.points.each do |point|
+    print "*"
     if (current_value = points_map[point])
       points_map[point] = (current_value + 1)
     else
