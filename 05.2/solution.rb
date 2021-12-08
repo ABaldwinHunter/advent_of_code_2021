@@ -126,11 +126,11 @@ end
 
 lines = point_sets.map { |point_set| Line.new(point_set.first, point_set.last) }
 
-part_one_lines = lines.select { |line| line.vertical? || line.horizontal? }
+# part_one_lines = lines.select { |line| line.vertical? || line.horizontal? }
 
 points_map = {}
 
-part_one_lines.each do |line|
+lines.each do |line|
   print "I"
   line.points.each do |point|
     print "*"
@@ -151,3 +151,4 @@ puts points_with_intersection.count
 # pp points_with_intersection
 
 # pp points_map
+#22088
