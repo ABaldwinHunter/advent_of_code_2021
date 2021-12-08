@@ -61,7 +61,7 @@ class Line
           current_y -= 1
         end
       else
-        while y1 <= y2
+        while current_y <= y2
           _points << [x1, current_y]
           current_y += 1
         end
@@ -115,8 +115,8 @@ class Line
   end
 end
 
-file = "sample.txt"
-# file = "input.txt"
+# file = "sample.txt"
+file = "input.txt"
 
 point_sets = File.read(file).split("\n").map do |point_set_string|
   point_set_string.split(" -> ").map do |coordinates|
@@ -134,8 +134,8 @@ part_one_lines.each do |line|
   print "I"
   line.points.each do |point|
     print "*"
-    if (current_value = points_map[point])
-      points_map[point] = (current_value + 1)
+    if points_map[point]
+      points_map[point] += 1
     else
       points_map[point] = 1
     end
@@ -148,6 +148,6 @@ puts "points with intersection"
 
 puts points_with_intersection.count
 
-pp points_with_intersection
+# pp points_with_intersection
 
-pp points_map
+# pp points_map
