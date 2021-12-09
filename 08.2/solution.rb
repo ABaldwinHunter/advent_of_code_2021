@@ -32,25 +32,25 @@ tuples.map do |tuple|
   numbers[7] = ten_digits.detect { |num| num.length == 3 }
   numbers[8] = ten_digits.detect { |num| num.length == 7 }
 
-  nine_and_six = ten_digits.select { |num| num.length == 6 }
+  nine_six_and_0 = ten_digits.select { |num| num.length == 6 }
 
-  a =  nine_and_six.first
-  b =  nine_and_six.last
-
-  # one has c, and the other has e
-  # so the two that don't appear in both are c and e
-  #
-  c_and_e = [a - b] + [b - a]
-
-  e = (c_and_e - numbers[1]).first.first # includes c and f
-  f = (numbers[1] - c_and_e).first
-  c = (numbers[1] - [f]).first
-
-  nine = nine_and_six.detect { |num| num.include? c }
-  six = nine_and_six.reject { |num| num.include? c }.first
+  nine = nine_six_and_0.detect { |num| (num - numbers[4]).length == 2 }
 
   numbers[9] = nine
+
+  six_and_0 = nine_six_and_0.reject { |num| (num - numbers[4]).length == 2 }
+
+  e = (six_and_0.first - nine).first # both have ee but 9 does not
+
+  six = six_and_0.detect { |num| (numbers[1] - num).length == 1 }
+  zero = six_and_0.detect { |num| (numbers[1] - num).length == 0 }
+
   numbers[6] = six
+  numbers[0] = zero
+
+  c = (numbers[1] - six).first
+
+  f = (numbers[1] - [c]).first
 
   # a is not in 2
   # b is not in 4 (1, 2, 3, 7)
@@ -95,9 +95,10 @@ tuples.map do |tuple|
     binding.pry
   end
 
-  output_sum = output.map { |digit| reverse_lookup[digit.sort] }.sum
+  output_digits = output.map { |digit| reverse_lookup[digit.sort] }
+  output_amount = output_digits.map { |num| num.to_s }.join("").to_i
 
-  total += output_sum
+  total += output_amount
 end
 
 puts "output sum of all is #{total}"
