@@ -8,7 +8,6 @@
 file = "input.txt"
 #
 
-
 # walk the grid and at each spot check if it's a low point. if so, increment count
 #
 
@@ -21,6 +20,10 @@ class Point
     @row_index = row_index
     @col_index = col_index
     @value = value
+  end
+
+  def ==(point)
+    row_index == point.row_index && col_index == point.col_index
   end
 
   def get_neighbors_from_grid(grid)
@@ -67,7 +70,72 @@ puts "sum is #{sum}"
 
 # start from low_points
 
-# low_points.map do |low_point|
-#   basin = low_point.build_basin
+def find_basin(rows, layer, basin_so_far)
+  print "*"
+  neighbors_that_could_be_basin = layer.flat_map do |point|
+    point.get_neighbors_from_grid(rows).reject { |point| point.value == 9 }.reject do |point|
+      (basin_so_far.any? { |basin_point| point == basin_point }) || layer.any? { |layer_point| layer_point == point }
+    end
+  end.uniq { |p| [p.row_index, p.col_index] }
+
+  if neighbors_that_could_be_basin.none?
+    basin_so_far
+  else
+    next_layer = []
+
+    neighbors_that_could_be_basin.each do |point|
+      next_gen_neighbors = point.get_neighbors_from_grid(rows).reject { |point| basin_so_far.any? { |basin_point| point == basin_point } }
+
+      is_a_low_point = next_gen_neighbors.all? { |neighbor| neighbor.value > point.value }
+
+      next_layer << point if is_a_low_point
+      basin_so_far << point
+    end
+
+    find_basin(rows, next_layer, basin_so_far)
+  end
+end
+
+# first solution - worked for sample but got stack level too deep error on input
+#
+# def find_basin(rows, start_point, basin_so_far)
+#   print "*"
+#   neighbors_that_could_be_basin = start_point.get_neighbors_from_grid(rows).reject { |point| point.value == 9 }.reject { |point| basin_so_far.any? { |basin_point| point == basin_point } }
+
+#   if neighbors_that_could_be_basin.none?
+#     basin_so_far
+#   else
+#     neighbors_that_could_be_basin.each do |point|
+#       next_gen_neighbors = point.get_neighbors_from_grid(rows).reject { |point| basin_so_far.any? { |basin_point| point == basin_point } }
+
+#       is_a_low_point = next_gen_neighbors.all? { |neighbor| neighbor.value > point.value }
+
+#       basin_so_far << point if is_a_low_point
+#     end
+
+#     neighbors_that_could_be_basin.each do |point|
+#       basin_so_far += find_basin(rows, point, basin_so_far)
+#     end
+
+#     basin_so_far.uniq
+#   end
 # end
 
+basins = low_points.map do |low_point|
+  find_basin(rows, [low_point], [low_point])
+end
+
+sizes = basins.map do |basin|
+  basin.uniq { |p| [p.row_index, p.col_index] }.count
+end
+
+biggest_to_smallest = sizes.sort.reverse
+
+answer = biggest_to_smallest[0] * biggest_to_smallest[1] * biggest_to_smallest[2]
+
+puts "answer #{answer}"
+
+# 12888495359984
+# answer too big
+
+# new answer 752752 # too low :(((
