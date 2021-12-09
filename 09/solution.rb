@@ -4,8 +4,8 @@
 # build a grid
 #
 
-# file = "sample.txt"
-file = "input.txt"
+file = "sample.txt"
+# file = "input.txt"
 #
 
 # walk the grid and at each spot check if it's a low point. if so, increment count
@@ -84,15 +84,17 @@ def find_basin(rows, layer, basin_so_far)
     next_layer = []
 
     neighbors_that_could_be_basin.each do |point|
-      next_gen_neighbors = point.get_neighbors_from_grid(rows).reject { |point| basin_so_far.any? { |basin_point| point == basin_point } }
+      next_gen_neighbors = point.get_neighbors_from_grid(rows).reject do |point|
+        (basin_so_far.any? { |basin_point| point == basin_point }) || layer.any? { |layer_point| layer_point == point }
+      end
 
       is_a_low_point = next_gen_neighbors.all? { |neighbor| neighbor.value > point.value }
 
-      next_layer << point if is_a_low_point
+      next_layer << point #if is_a_low_point
       basin_so_far << point
     end
 
-    find_basin(rows, next_layer, basin_so_far)
+    find_basin(rows, next_layer.uniq { |point| [point.row_index, point.col_index] }, basin_so_far)
   end
 end
 
@@ -138,4 +140,6 @@ puts "answer #{answer}"
 # 12888495359984
 # answer too big
 
-# new answer 752752 # too low :(((
+
+# new answer 752,752 # too low :(((
+# 987840
