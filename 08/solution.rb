@@ -60,18 +60,8 @@ class Decoder
     5 => ["a", "b", "d", "f", "g"],
     6 => ["a", "b", "d", "e", "f", "g"],
     7 => ["a", "c", "f"],
-    8 => ["a", "b", "c" "d", "e", "f", "g"],
-    9 => ["a", "b", "c" "d", "f", "g"],
-  }
-  DEFAULT_POSSIBILITIES = {
-    # where left side is the true number, and right is the coded version
-    "a" => ["a", "b", "c", "d", "e", "f", "g"],
-    "b" => ["a", "b", "c", "d", "e", "f", "g"],
-    "c" => ["a", "b", "c", "d", "e", "f", "g"],
-    "d" => ["a", "b", "c", "d", "e", "f", "g"],
-    "e" => ["a", "b", "c", "d", "e", "f", "g"],
-    "f" => ["a", "b", "c", "d", "e", "f", "g"],
-    "g" => ["a", "b", "c", "d", "e", "f", "g"],
+    8 => ["a", "b", "c", "d", "e", "f", "g"],
+    9 => ["a", "b", "c", "d", "f", "g"],
   }
 
   NON_UNIQ_NUMBERS_TO_LENGTHS = {
@@ -83,6 +73,7 @@ class Decoder
   }
 
   attr_reader :output_nums, :pattern_digits
+  attr_accessor :possibilities_map
 
   def initialize(display)
     pattern, output = display.split(" | ")
@@ -114,13 +105,51 @@ class Decoder
 
   private
 
+  def fresh_possibilities
+    {
+      "a" => ["a", "b", "c", "d", "e", "f", "g"],
+      "b" => ["a", "b", "c", "d", "e", "f", "g"],
+      "c" => ["a", "b", "c", "d", "e", "f", "g"],
+      "d" => ["a", "b", "c", "d", "e", "f", "g"],
+      "e" => ["a", "b", "c", "d", "e", "f", "g"],
+      "f" => ["a", "b", "c", "d", "e", "f", "g"],
+      "g" => ["a", "b", "c", "d", "e", "f", "g"],
+    }
+  end
+
   def decode!
     while possibilities_map.values.any? { |possibilities| possibilities.count > 1 }
+      starting_state_this_round = possibilities_map
+
       puts "current possibilities"
       pp possibilities_map
 
+      binding.pry
+
+      already_solved_letters = possibilities_map.select { |num, possibilities| possibilities.count == 1 }.each do |true_letter, encoded|
+        not_letters = possibilities_map.keys.reject { |k| k == true_letter }
+
+        not_letters.each do |letter|
+          if possibilities_map[letter].include? encoded
+            possibilities_map[letter].delete(encoded)
+          end
+        end
+      end
+
       pattern_digits.each do |coded_digit|
         number_possibilities = Array(deduce_number(coded_digit)) #ensure array
+
+        if number_possibilities == [1]
+          possibilities_map["c"] = coded_digit.sort unless possibilities_map["c"].length == 1
+          possibilities_map["f"] = coded_digit.sort unless possibilities_map["f"].length == 1
+
+          possibilities_map.keys.each do |k|
+            if !["c", "f"].include?(k)
+              possibilities_map[k].delete(coded_digit.first)
+              possibilities_map[k].delete(coded_digit.last)
+            end
+          end
+        end
 
         letter_possibilities = number_possibilities.flat_map { |num| DIGITS_TO_SEGMENT_GROUPS[num] }
 
@@ -135,7 +164,31 @@ class Decoder
           end
         end
       end
+
+      binding.pry
+
+      if starting_state_this_round == possibilities_map
+        guess!
+      elsif impossible?
+        reset!
+      end
     end
+  end
+
+  def reset!
+    possibilities_map = fresh_possibilities
+  end
+
+  def impossible?
+    possibilities_map.any? { |k, v| v.length == 0 }
+  end
+
+  def guess!
+    unsolved = possibilities_map.reject { |num, possibilities| possibilities.count == 1 }
+
+    one_to_guess = unsolved.min_by { |num, possibilities| possibilities.count } # ["b", [a, c]]
+
+    possibilities_map[one_to_guess.first] == one_to_guess.last.tap { |ary| ary.shift }
   end
 
   def deduce_number(digit)
@@ -188,14 +241,18 @@ class Decoder
 
     if could_be_bucket_map.any? { |k, v| v.empty? }
       false
-    elsif (bucket_values_wth_one = could_be_bucket_map.select { |k, v| v.length == 1 }.map { |k, v| v }).length != bucket_values_wth_one.uniq.length
-      false
-    # elsif (bucket_values_wth_two = could_be_bucket_map.select { |k, v| v.length == 2 }.map { |k, v| v }).length != (bucket_values_wth_two.uniq.length - 1)
-    #   false
-    # elsif (bucket_values_wth_three = could_be_bucket_map.select { |k, v| v.length == 3 }.map { |k, v| v }).length != (bucket_values_wth_three.uniq.length - 2)
-    #   false
     else
-      true
+      values = could_be_bucket_map.values
+
+      over_subscribed = false
+
+      values.each do |value|
+        if could_be_bucket_map.select { |k2, v2| v2 == value }.length > value.length
+          over_subscribed = true
+        end
+      end
+
+      !over_subscribed
     end
   end
 
@@ -212,8 +269,9 @@ class Decoder
   end
 end
 
-file = 'sample.txt'
+# file = 'sample.txt'
 # file = 'input.txt'
+file = 'full.txt'
 
 displays = File.read(file).split("\n").map { |display| Decoder.new(display) }
 
