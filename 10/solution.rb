@@ -1,5 +1,6 @@
 # day 10
 #
+require 'pry'
 
 # file = 'sample.txt'
 file = 'input.txt'
@@ -9,10 +10,10 @@ lines = File.read(file).split("\n").map { |line| line.split("") }
 
 
 POINTS = {
-  ')' => 3,
-  ']' => 57,
-  '}' => 1197,
-  '>' => 25137,
+  ')' => 1,
+  ']' => 2,
+  '}' => 3,
+  '>' => 4,
 }
 # sample should be 26397
 #
@@ -32,13 +33,11 @@ PAIRS = {
 OPENING = PAIRS.keys
 CLOSING = PAIRS.values
 
-errors = []
+needs_autocompletions = []
 
 lines.each do |line|
-  # we only care about the first error
-  #
-
   stack = []
+  errored = false
 
   line.each do |char|
     if OPENING.include? char
@@ -47,14 +46,40 @@ lines.each do |line|
       latest = stack.pop
 
       if PAIRS[latest] != char
-        errors << char
-
+        errored = true
         break
       end
     end
   end
+
+  if stack.any? && (errored == false)
+    needs_autocompletions << stack
+  end
 end
 
-total = errors.map { |char| POINTS.fetch(char) }.sum
+autocompletions = needs_autocompletions.map do |stack_leftover|
+  stack_leftover.reverse.map do |opening_char| # reverse to start from most recent to pop off
+    PAIRS.fetch(opening_char)
+  end
+end
 
-puts "total is #{total}"
+def calculate_score(autocompletion)
+  score = 0
+
+  autocompletion.each do |char|
+    score = score * 5
+    score += POINTS[char]
+  end
+
+  score
+end
+
+scores = autocompletions.map { |autocompletion| calculate_score(autocompletion) }.sort
+
+middle_index = ((scores.length - 1) / 2) # don't need to readd 1 because index starts at 0
+
+answer = scores[middle_index]
+
+puts "answer is #{answer}"
+
+
