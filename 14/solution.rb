@@ -1,79 +1,97 @@
 # day 14
 #
 
-file = "sample.txt"
-# file = "input.txt"
+# so we don't need the full polymer necessarily, just
+# the counts
+#
+# maybe we can do something with the rules so that they aren't just pair to insertion, but something more. like a function. then we could use recursion
+
+# CH -> B
+# [CH] -> [CB, BH]
+# [CB] -> [CH, BH]
+
+# file = "sample.txt"
+file = "input.txt"
 
 _template, _rules = File.read(file).split(/\n{2,}/)
 
 template = _template.split("")
 
-template_hash = {}
-
-template.each.with_index do |char, indx|
-  template_hash[indx] = char
-end
-
-rules_hash = {}
+RULES_HASH = {}
 
 rules = _rules.split("\n").map do |rule|
   _pair, inserted = rule.split(" -> ")
 
   pair = _pair.split("")
 
-  rules_hash[pair] = inserted
+  new_pair_one = [pair.first, inserted]
+  new_pair_last = [inserted, pair.last]
+
+  RULES_HASH[pair] = [new_pair_one, new_pair_last]
 end
 
-current_step = 1
-target = 13
-current_template = template_hash
+def letter_counts(pair_counts, steps_left)
+  # require 'pry'; binding.pry
+  # { NH => 6 }
+  if steps_left == 0
+    pair_counts
+  else
+    new_pair_counts = {}
 
-while current_step <= target
-  puts current_template.values.join("")
-  last_pair_start = current_template.keys.length - 2 # one before the last element
-  puts "current step: #{current_step}"
-  new_index_one = 0
-  new_insertion_index = 1
+    pair_counts.each do |pair, count|
+      new_set = RULES_HASH[pair]
 
-  new = {}
+      new_set.each do |new_pair|
+        new_pair_counts[new_pair] ||= 0
+        new_pair_counts[new_pair] += count
+      end
+    end
 
-  (0..(last_pair_start)).each do |index|
-    # require 'pry'; binding.pry
-    next_index = index + 1
-
-    pair = [current_template[index], current_template[next_index]]
-    insertion = rules_hash[pair]
-
-    new[new_index_one] = current_template[index]
-    new[new_insertion_index] = insertion
-
-    new_index_one += 2
-    new_insertion_index += 2
+    letter_counts(new_pair_counts, (steps_left - 1))
   end
-
-  last_element_index = last_pair_start + 1
-
-  last_letter = current_template[last_element_index]
-
-  new[new_index_one] = last_letter # it was incremented in last round of loop
-
-  current_template = new
-  current_step += 1
 end
 
-# require 'pry'; binding.pry
+last_letter_in_polymer = template.last
+starting_pair_counts = {}
 
-counts = current_template.values.group_by(&:to_s)
+last_pair_start = template.length - 2
 
-most_occuring = counts.max_by do |item, values|
-  values.count
-end.last.count
+(0..(last_pair_start)).each do |index|
+  next_index = index + 1
 
+  pair = [template[index], template[next_index]]
 
-least = counts.min_by do |item, values|
-  values.count
-end.last.count
+  starting_pair_counts[pair] ||= 0
 
-answer = most_occuring - least
+  starting_pair_counts[pair] += 1
+end
+
+pear_counts = letter_counts(starting_pair_counts, 40)
+
+by_single_letter = {}
+
+pear_counts.each do |pair, count|
+  pair.each do |char|
+    by_single_letter[char] ||= 0
+    by_single_letter[char] += count
+  end
+end
+
+counts = by_single_letter.values.map do |count|
+  # the one that is the last letter will be odd
+  #
+  if count % 2 == 0
+    count / 2
+  else
+    half = (count - 1) / 2
+
+    half + 1
+  end
+end
+
+most_occurring = counts.max
+least = counts.min
+
+answer = most_occurring - least
 
 puts "answer is #{answer}"
