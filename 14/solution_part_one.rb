@@ -1,8 +1,9 @@
 # day 14
 #
+# part one
 
-# file = "sample.txt"
-file = "input.txt"
+file = "sample.txt"
+# file = "input.txt"
 
 _template, _rules = File.read(file).split(/\n{2,}/)
 
@@ -19,7 +20,7 @@ rules = _rules.split("\n").map do |rule|
 end
 
 current_step = 1
-target = 10
+target = 40
 current_template = template
 
 while current_step <= target
