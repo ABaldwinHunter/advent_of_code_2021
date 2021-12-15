@@ -6,12 +6,17 @@
 
 require 'pry';
 
-file = 'sample.txt'
-# file = 'input.txt'
+# file = 'sample.txt'
+file = 'input.txt'
 
-octos = File.read(file).split("\n").map { |row| row.split("").map(&:to_i) } # 2d array
+rows = File.read(file).split("\n").map { |row| row.split("").map(&:to_i) } # 2d array
 
-def zero_neighbors(coord, rows)
+# [
+#  [1, 2, 3, 4]
+#  [4, 4, 5, 6]
+# ]
+
+def neighbors(coord)
   x = coord.first
   y = coord.last
 
@@ -24,68 +29,71 @@ def zero_neighbors(coord, rows)
     [(x - 1), (y + 1)],
     [(x + 1), (y - 1)],
     [(x - 1), (y - 1)],
-  ].select do |neighbor_coord|
-    value = (rows[neighbor_coord.first] && rows[neighbor_coord.first][neighbor_coord.last])
-
-    value && value == 0
-  end.compact
+  ].reject { |set| set.any? { |coord| coord < 0 } } # ruby has a weird thing with negative indices
 end
 
 current_step = 1
 flashes_count = 0
-flashed_on_step = {}
 
-while current_step <= 10
+while current_step <= 100
+
   puts "step #{current_step}"
-  unchanged_for_one_round = false
-  current_round = 1
-  flashed_on_round = {}
-  last_state = nil
+  # binding.pry
+  flashed_this_step = []
 
-  while (unchanged_for_one_round == false) do
-    binding.pry
-    puts "round #{current_round}"
+  rows.each.with_index do |row, i|
+    row.each.with_index do |octo, j|
+      if octo == 9
+        flashed_this_step << [i, j]
+        flashes_count += 1
 
-    octos.each.with_index do |row, i|
-      row.each.with_index do |octo, j|
-        if (octo == 0 && flashed_on_step[(current_step)]&.include?([i, j]))
-            # do nothing
-        else
-          luminescent_neighbors = zero_neighbors([i, j], octos).select { |coord| flashed_on_round[(current_round - 1)]&.include?(coord) }
-
-          luminescent_neighbors.each do |neighbor|
-            octo += 1
-          end
-
-          if current_round == 1
-            octo += 1
-          end
-
-          if octo >= 10
-            flashed_on_round[current_round] ||= []
-            flashed_on_round[current_round] << [i, j]
-            flashes_count += 1
-
-            octo = 0
-          end
-
-          octos[i][j] = octo
-        end
+        rows[i][j] = 0
+      else
+        rows[i][j] = octo + 1
       end
     end
-
-    unless last_state.nil?
-      if octos == last_state
-        unchanged_for_one_round = true
-      end
-    end
-
-    last_state = octos
-    current_round += 1
   end
-end
 
-current_step += 1
+  done_flashing = true
+
+  if flashed_this_step.any?
+    done_flashing = false
+    just_flashed = flashed_this_step
+  end
+
+  while done_flashing != true
+    new_just_flashed = []
+
+    just_flashed.each do |coord|
+      neighbors(coord).each do |c|
+        val = (rows[c.first] && rows[c.first][c.last])
+
+        if val && val != 0 # there's a neighbor and it didn't flash this step
+          if val == 9
+            # flash
+            flashes_count += 1
+            rows[c.first][c.last] = 0
+
+            new_just_flashed << [c.first, c.last]
+          else
+            rows[c.first][c.last] = (val + 1)
+          end
+        end
+
+      end
+    end
+
+    if new_just_flashed.any?
+      just_flashed = new_just_flashed
+    else
+      done_flashing = true
+    end
+  end
+
+  current_step += 1
+
+end
 
 puts "answer is #{flashes_count}"
 
+# 202 is too low
