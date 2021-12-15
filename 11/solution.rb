@@ -3,6 +3,7 @@
 #
 # luminescent octopi
 #
+# part 2 - first time they all flash would be when there are 100 flashes in a step, because the grid is 10X10
 
 require 'pry';
 
@@ -34,18 +35,21 @@ end
 
 current_step = 1
 flashes_count = 0
+flashes_count_this_step = 0
 
-while current_step <= 100
+while flashes_count_this_step != 100
 
   puts "step #{current_step}"
   # binding.pry
   flashed_this_step = []
+  flashes_count_this_step = 0
 
   rows.each.with_index do |row, i|
     row.each.with_index do |octo, j|
       if octo == 9
         flashed_this_step << [i, j]
         flashes_count += 1
+        flashes_count_this_step += 1
 
         rows[i][j] = 0
       else
@@ -72,6 +76,7 @@ while current_step <= 100
           if val == 9
             # flash
             flashes_count += 1
+            flashes_count_this_step += 1
             rows[c.first][c.last] = 0
 
             new_just_flashed << [c.first, c.last]
@@ -94,6 +99,7 @@ while current_step <= 100
 
 end
 
-puts "answer is #{flashes_count}"
+# puts "answer is #{flashes_count}"
+#
+puts "Answer is #{(current_step - 1)}"
 
-# 202 is too low
