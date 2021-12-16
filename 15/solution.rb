@@ -27,12 +27,14 @@ destination = [(num_rows - 1), (num_cols - 1)] # moving from top left to bottom 
 # depth first search
 # https://www.geeksforgeeks.org/minimum-cost-of-simple-path-between-two-nodes-in-a-directed-and-weighted-graph/
 
+# the instructions for advent didn't say graph couldn't have cycles, but for minimum I think we'd never repeat
+#
 def minimum_cost_simple_path(point, destination, visited, graph)
   if (point == destination)
     return 0
   end
 
-  visited[point] = 1
+  visited[point] = true
 
   # Traverse through all
   # the adjacent nodes
@@ -51,6 +53,10 @@ def minimum_cost_simple_path(point, destination, visited, graph)
     [x, (y - 1)],
   ].reject { |point| point.any? { |coord| coord < 0 } }
 
+  # also dijkstra's shortest path algorithm
+  # https://www.cs.cornell.edu/courses/cs2110/2014sp/L18-GraphsII/L18cs2110sp13.pdf
+  #
+
   neighbors.each do |neighbor_point|
     if (val = graph[neighbor_point.first] && graph[neighbor_point.first][neighbor_point.last]) && !visited[neighbor_point]
       # Cost of the further path
@@ -65,10 +71,17 @@ def minimum_cost_simple_path(point, destination, visited, graph)
         # Unmarking the current node
         # to make it available for other
         # simple paths
-        visited[u] = false
+        visited[neighbor_point] = false
 
         # Returning the minimum cost
         ans
       end
     end
   end
+end
+
+distances = Array.new((num_rows * num_cols), 1.0/0.0)
+distances[[0,0]] = 0
+
+tight = [] # what is tight? is this the frontier?
+prev = [] # is this like visited?
