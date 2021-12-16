@@ -35,10 +35,6 @@ def small_cave?(cave)
 end
 
 def get_paths(current_path)
-# require 'pry'; binding.pry
-  puts "current path"
-  pp current_path
-
   small_cave_times_visited = {}
 
   current_path.each do |cave|
@@ -86,7 +82,5 @@ def get_paths(current_path)
 end
 
 paths = get_paths(['start'])
-
-pp paths
 
 puts "answer s #{paths.length}"
