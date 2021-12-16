@@ -39,18 +39,12 @@ def get_paths(current_path)
   puts "current path"
   pp current_path
 
-  # exceeded_small_cave_visit_allowance = false
   small_cave_times_visited = {}
 
   current_path.each do |cave|
     if small_cave?(cave)
       small_cave_times_visited[cave] ||= 0
       small_cave_times_visited[cave] += 1
-
-      if small_cave_times_visited[cave] > 1
-        exceeded_small_cave_visit_allowance = true
-        puts "greater than once"
-      end
     end
   end
 
@@ -59,9 +53,23 @@ def get_paths(current_path)
   opts = CAVE_TO_CONNECTING_MAP[current_cave]
 
   opts.each do |next_node|
-    if next_node == 'start'
-      next
-    elsif (count = small_cave_times_visited[next_node]) && count > 0
+    skip = false
+
+    if small_cave?(next_node)
+      count = small_cave_times_visited[next_node]
+
+      if count
+        if count > 1
+          skip = true
+        elsif small_cave_times_visited.select { |k, v| v > 1 }.map { |pairs| pairs.first }.reject { |cave| cave == next_node }.any? # if any others have been visited twice
+          skip = true
+        end
+      end
+    elsif next_node == 'start'
+      skip = true
+    end
+
+    if skip
       next
     else
       new_path = current_path + [next_node]
