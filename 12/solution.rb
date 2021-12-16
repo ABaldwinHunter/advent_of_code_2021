@@ -4,68 +4,81 @@
 #
 # it feels like this calls for some kind of grid or network
 
-file = 'sample_one.txt'
+# file = 'sample_one.txt'
 # file = 'sample_two.txt'
 # file = 'sample_three.txt'
-# file = 'input.txt'
+file = 'input.txt'
 #
 segments = File.read(file).split("\n").map do |seg|
   seg.split("-")
 end # ["A", "start"]
 
-segments_with_start = segments.select { |seg| seg.any? == 'start' }
-segments_with_end = segments.select { |seg| seg.any? == 'end' }
+# build a hash - easier than segments
 
-# build paths iteratively, starting from segments with start
+CAVE_TO_CONNECTING_MAP = {}
 
-valid_paths = []
+segments.each do |segment|
+  first_node = segment.first
+  end_node = segment.last
 
-segments_with_start.each do |segment|
-  first_cave = segment.select { |spot| spot != 'start' }.first
+  CAVE_TO_CONNECTING_MAP[first_node] ||= []
+  CAVE_TO_CONNECTING_MAP[end_node] ||= []
 
-  segments_with_first_cave = segments.select { |seg| seg.include? first_cave }
+  CAVE_TO_CONNECTING_MAP[first_node] << end_node
+  CAVE_TO_CONNECTING_MAP[end_node] << first_node # both ways
 end
 
-class Node
-  attr_reader :value
+# require 'pry'; binding.pry
 
-  def initialize(value:, connections:)
-    @value = value
-    @connections = connections
-  end
-
-  def big?
-    (value.upcase == value)
-  end
-
-  def small?
-    !big?
-  end
-
-  def start?
-    value == 'start'
-  end
-
-  def end_node?
-    value == 'end'
-  end
-
-  def connections
-  end
+def small_cave?(cave)
+  cave.downcase == cave && !['start', 'end'].include?(cave)
 end
 
-class Network
-  def initialize(segments)
-    @segments = segments
+def get_paths(current_path)
+# require 'pry'; binding.pry
+  puts "current path"
+  pp current_path
 
-    build_nodes(segment)
+  # exceeded_small_cave_visit_allowance = false
+  small_cave_times_visited = {}
+
+  current_path.each do |cave|
+    if small_cave?(cave)
+      small_cave_times_visited[cave] ||= 0
+      small_cave_times_visited[cave] += 1
+
+      if small_cave_times_visited[cave] > 1
+        exceeded_small_cave_visit_allowance = true
+        puts "greater than once"
+      end
+    end
   end
 
-  def build_nodes
-    caves = []
+  paths = []
+  current_cave = current_path.last
+  opts = CAVE_TO_CONNECTING_MAP[current_cave]
 
+  opts.each do |next_node|
+    if next_node == 'start'
+      next
+    elsif (count = small_cave_times_visited[next_node]) && count > 0
+      next
+    else
+      new_path = current_path + [next_node]
 
-
+      if next_node == 'end'
+        paths << new_path
+      else
+        paths += get_paths(new_path)
+      end
+    end
   end
+
+  paths
 end
 
+paths = get_paths(['start'])
+
+pp paths
+
+puts "answer s #{paths.length}"
