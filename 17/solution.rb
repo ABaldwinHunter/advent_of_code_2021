@@ -33,6 +33,17 @@
 # target area: x=20..30, y=-10..-5
 #
 #
+# puts "test"
+# puts "for # target area: x=20..30, y=-10..-5"
+
+# puts "x=25, y=-8 should be true"
+# puts in_target_area?(25, -8)
+
+# puts "x=20, y=--5 should be true"
+# puts in_target_area?(20, -5)
+
+# puts "x=40, y=--5 should be false"
+# puts in_target_area?(40, -5)
 
 TARGET_AREA = {
   'x' => (20..30),
@@ -44,14 +55,55 @@ def in_target_area?(x, y)
     TARGET_AREA.fetch('y').include?(y)
 end
 
-puts "test"
-puts "for # target area: x=20..30, y=-10..-5"
+# we want to find the starting velocity to increase the y position
+# the shape will be like an upside down parabola I think
+#
+# we could just keep increasing one or both x and y and keep track of the highest position
+# but let's do a couple by hand
+#
+# 6,9 was the best for the other
+#
+# well we probably want to get as far to the right of the space as possible
+#
+# basically the smallest x such that it still hits the spot
 
-puts "x=25, y=-8 should be true"
-puts in_target_area?(25, -8)
+# every step the x decreases by one
+#
 
-puts "x=20, y=--5 should be true"
-puts in_target_area?(20, -5)
+def addition_factorial(number)
+  sum = 0
 
-puts "x=40, y=--5 should be false"
-puts in_target_area?(40, -5)
+  while number > 0
+    sum += number
+    number -= 1
+  end
+
+  sum
+end
+
+def min_starting_x_for_distance(horizontal_distance) # assuming position 0 and y infinitely high
+  puts "beginning"
+  # each step the x slows down by one
+  # our problem doesn't really care about negative x - though maybe that's next
+
+  # start with lowest and then stop when reached
+  # x + (x - 1) + (x - 2) + (x - 3) + (x - 4)
+  min_starting_x_velocity = 1
+  found = false
+  candidate = nil
+
+  while !found
+    candidate = addition_factorial(min_starting_x_velocity)
+    puts "candidate is #{candidate}"
+    if candidate >= horizontal_distance
+      candidate
+      found = true
+    else
+      min_starting_x_velocity += 1
+    end
+  end
+end
+
+puts min_starting_x_for_distance(111)
+
+
