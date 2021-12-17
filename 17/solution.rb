@@ -102,8 +102,16 @@ def min_starting_x_for_distance(horizontal_distance) # assuming position 0 and y
       min_starting_x_velocity += 1
     end
   end
+
+  min_starting_x_velocity
 end
 
-puts min_starting_x_for_distance(111)
+# puts min_starting_x_for_distance(20) # confirm 6
 
+# the horizontal distance traveled is the bottom of a triangle
+#
+# a^2 + b^2 = c^2 # pythagoraean theorem
+#
+
+puts min_starting_x_for_distance(111)
 
