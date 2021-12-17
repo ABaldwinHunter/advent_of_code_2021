@@ -1,87 +1,92 @@
 # day 15
+# pairing with matt
+# dijkstra
 #
-# chitons!
-#
-# this one is probably going to be so fun and hard because I am very fuzzy and under informed
-# about paths, so here we go!
-#
-# my general initial logic, would be, find all of the paths. then calculate their risk level, and
-# choose the smallest
-#
-# It's a balance between moving few steps and avoid high risk areas
+# forth
+# factor
 
-# file = 'input.txt'
+# each vertex - unvisited, currently visting, visited
+# best cost
+#
+# initialize with all inifinities (or nil) and starting point is 0
+#
+# matrix of objects - keep metadata inside
+#
+
 file = 'sample.txt'
+# file = 'input.txt'
 
-rows = File.read(file).split("\n").map(&:to_i) # 2d array
-
-num_rows = rows.length
-num_cols = rows.first.length
-
-start = [0,0]
-
-destination = [(num_rows - 1), (num_cols - 1)] # moving from top left to bottom right
-
-# how to find all of the potential paths
-#
-# depth first search
-# https://www.geeksforgeeks.org/minimum-cost-of-simple-path-between-two-nodes-in-a-directed-and-weighted-graph/
-
-# the instructions for advent didn't say graph couldn't have cycles, but for minimum I think we'd never repeat
-#
-def minimum_cost_simple_path(point, destination, visited, graph)
-  if (point == destination)
-    return 0
-  end
-
-  visited[point] = true
-
-  # Traverse through all
-  # the adjacent nodes
-
-  ans = Float::INFINITY
-
-  # adjacent = neighbors above, below, left and right
-
-  x = point.first
-  y = point.last
-
-  neighbors = [
+def neighbors(matrix, x, y)
+  coords = [
     [(x + 1), y],
     [(x - 1), y],
     [x, (y + 1)],
     [x, (y - 1)],
-  ].reject { |point| point.any? { |coord| coord < 0 } }
+  ].reject { |point| point.any? { |coord| coord < 0 } } # ruby array -1 returns something
 
-  # also dijkstra's shortest path algorithm
-  # https://www.cs.cornell.edu/courses/cs2110/2014sp/L18-GraphsII/L18cs2110sp13.pdf
-  #
+  coords.select do |coord|
+    matrix[coord.first] && matrix[coord.first][coord.last]
+  end
+end
 
-  neighbors.each do |neighbor_point|
-    if (val = graph[neighbor_point.first] && graph[neighbor_point.first][neighbor_point.last]) && !visited[neighbor_point]
-      # Cost of the further path
-      curr = minimum_cost_simple_path(neighbor_point, destination, visited, graph)
+class Vertex
+  attr_reader :cost_to_move_to
+  attr_accessor :visited, :minimum_cost
 
-      # Check if we have reached the destination
-      if (curr < Float::INFINITY)
+  def initialize(cost_to_move_to:, minimum_cost: Float::INFINITY)
+    @cost_to_move_to = cost_to_move_to
+    @visited = false
+    # @shortest_cost_to_get_to_from_source
+    @minimum_cost = minimum_cost
+  end
 
-        # Taking the minimum cost path
-        ans = [ans, (val + curr)].min
+  def visited?
+    @visited
+  end
 
-        # Unmarking the current node
-        # to make it available for other
-        # simple paths
-        visited[neighbor_point] = false
+  def to_s
+    "vertex with cost #{cost_to_move_to}, minimum_path_cost #{minimum_cost}"
+  end
+end
 
-        # Returning the minimum cost
-        ans
+matrix = File.read(file).split("\n").map do |row|
+  row.split("").map { |str_cost| Vertex.new(cost_to_move_to: str_cost.to_i) }
+end
+
+matrix[0][0].minimum_cost = 0
+matrix[0][0].visited = true
+
+# implement heap sort
+
+puts matrix.map { |row| row.map(&:to_s).join(" ") }.join("\n")
+
+def dijkstra(from_position, to_position, matrix) # marking visited on the vertices themselves
+  # we're doing breadth first queue
+
+  queue = []
+
+  current_vertex = from_position
+
+  while current_vertex != to_position do
+    neighbor_coords = neighbors(matrix, current_vertex.first, current_vertex.last)
+
+    # compare risk from the current vertex to the neighbor to what neighbor already has as min
+    #
+
+    curr_min_cost = matrix[current_vertex.first][current_vertex.last].minimum_cost
+
+    neighbor_coords.each do |neighbor_vertex|
+      vertex_obj = matrix[neighbor_vertex.first][neighbor_vertex.last]
+
+      new_cost = curr_min_cost + vertex_obj.cost_to_move_to
+
+      if vertex_obj.minimum_cost > new_cost
+        vertex_obj.minimum_cost = new_cost
+      end
+
+      if !vertex_obj.visted?
+        queue << neighbor_vertex
       end
     end
   end
 end
-
-distances = Array.new((num_rows * num_cols), 1.0/0.0)
-distances[[0,0]] = 0
-
-tight = [] # what is tight? is this the frontier?
-prev = [] # is this like visited?
