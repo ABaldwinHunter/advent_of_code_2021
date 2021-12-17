@@ -23,10 +23,10 @@
 # target area: x=111..161, y=-154..-101
 #
 
-# TARGET_AREA = {
-#   x: (111..161),
-#   y: (-154..-101),
-# }
+TARGET_AREA = {
+  'x' => (111..161),
+  'y' => (-154..-101),
+}
 
 # sample
 #
@@ -45,14 +45,18 @@
 # puts "x=40, y=--5 should be false"
 # puts in_target_area?(40, -5)
 
-TARGET_AREA = {
-  'x' => (20..30),
-  'y' => (-10..-5),
-}
+# TARGET_AREA = {
+#   'x' => (20..30),
+#   'y' => (-10..-5),
+# }
 
 def in_target_area?(x, y)
   TARGET_AREA.fetch('x').include?(x) &&
     TARGET_AREA.fetch('y').include?(y)
+end
+
+def past_target_area?(x, y)
+  (x > TARGET_AREA.fetch('x').max) || (y < TARGET_AREA.fetch('y').min)
 end
 
 # we want to find the starting velocity to increase the y position
@@ -113,5 +117,74 @@ end
 # a^2 + b^2 = c^2 # pythagoraean theorem
 #
 
-puts min_starting_x_for_distance(111)
+puts min_starting_x_for_distance(111) # 15
+
+# and now we try to find the max y
+
+# x has to be 0 as y falls straight down
+
+# sample, we know is 6, 9
+
+# there will be at least 15 steps
+
+# def y_start_for_steps_and_target_min(15, -101) # has to be at least this low
+# end
+
+def lands_in_target?(x_velocity, y_velocity)
+  x_position = 0
+  y_position = 0
+  highest_y_position = 0
+
+  finished = false
+  lands_in_target = nil
+
+  while !finished do
+    puts "x_position, y_position, #{x_position}, #{y_position}"
+    x_position += x_velocity
+    y_position += y_velocity
+
+    if y_position > highest_y_position
+      highest_y_position = y_position
+    end
+
+    if x_velocity > 0
+      x_velocity -= 1
+    end
+
+    y_velocity -= 1
+
+    if in_target_area?(x_position, y_position)
+      lands_in_target = true
+      puts "highest y position is #{highest_y_position}"
+      finished = true
+    elsif past_target_area?(x_position, y_position)
+      puts "past target area for y velocity #{y_velocity}"
+      lands_in_target = false
+      finished = true
+    end
+  end
+
+  lands_in_target
+end
+
+def check_for_ys(x_velocity)
+  test_y = 500
+  found_it = false
+
+  while (!found_it && test_y > 0) do
+    puts "testing"
+    if lands_in_target?(x_velocity, test_y)
+      found_it = true
+    else
+      test_y -= 1
+    end
+  end
+
+  test_y
+end
+
+puts check_for_ys(15) # 153
+# x was the minimum x
+#
+# highest y position 11781
 
