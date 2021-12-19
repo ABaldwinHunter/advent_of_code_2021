@@ -54,10 +54,6 @@ class Vertex
     other_vertex.minimum_cost <=> minimum_cost
   end
 
-  def visited?
-    @visited
-  end
-
   def to_s
     "vertex with cost #{cost_to_move_to}, minimum_path_cost #{minimum_cost}"
   end
@@ -70,18 +66,13 @@ matrix = File.read(file).split("\n").map.with_index do |row, i|
 end
 
 matrix[0][0].minimum_cost = 0
-# matrix[0][0].visited = true
 
-# puts matrix.map { |row| row.map(&:to_s).join(" ") }.join("\n")
-
-def dijkstra(matrix) # marking visited on the vertices themselves
-  # we're doing breadth first queue
-
-  distances = {} # point => integer
+def dijkstra(matrix)
+  distances = {} # coords => integer
   q = PriorityQueue.new
   start_vertex = matrix[0][0]
 
-  distances[start_vertex.coords] = 0;
+  distances[start_vertex.coords] = 0
 
   q << start_vertex
 
@@ -94,11 +85,8 @@ def dijkstra(matrix) # marking visited on the vertices themselves
 
     neighbors = neighbors(matrix, current)
 
-    # compare risk from the current vertex to the neighbor to what neighbor already has as min
-    #
-
     neighbors.each do |neighbor|
-      # curr_distance = distances[current.coords]
+      # compare risk from the current vertex to the neighbor to what neighbor already has as min
       curr_distance = current.minimum_cost
 
       neighbor_distance = distances[neighbor.coords]
