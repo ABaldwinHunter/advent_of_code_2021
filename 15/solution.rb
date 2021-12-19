@@ -13,10 +13,15 @@
 # matrix of objects - keep metadata inside
 #
 
-file = 'sample.txt'
-# file = 'input.txt'
+# file = 'sample.txt'
+file = 'input.txt'
+#
 
-def neighbors(matrix, x, y)
+require_relative './priority_queue'
+
+def neighbors(matrix, vertex)
+  x, y = vertex.coords
+
   coords = [
     [(x + 1), y],
     [(x - 1), y],
@@ -24,20 +29,29 @@ def neighbors(matrix, x, y)
     [x, (y - 1)],
   ].reject { |point| point.any? { |coord| coord < 0 } } # ruby array -1 returns something
 
-  coords.select do |coord|
+  coords.map do |coord|
     matrix[coord.first] && matrix[coord.first][coord.last]
-  end
+  end.compact
 end
 
 class Vertex
-  attr_reader :cost_to_move_to
+  include Comparable
+
+  attr_reader :cost_to_move_to, :coords
   attr_accessor :visited, :minimum_cost
 
-  def initialize(cost_to_move_to:, minimum_cost: Float::INFINITY)
+  def initialize(cost_to_move_to:, minimum_cost: Float::INFINITY, coords:)
     @cost_to_move_to = cost_to_move_to
     @visited = false
     # @shortest_cost_to_get_to_from_source
     @minimum_cost = minimum_cost
+    @coords = coords
+  end
+
+  def <=>(other_vertex)
+    # the smaller the cost to move to, the higher the
+    # priority
+    other_vertex.minimum_cost <=> minimum_cost
   end
 
   def visited?
@@ -49,44 +63,74 @@ class Vertex
   end
 end
 
-matrix = File.read(file).split("\n").map do |row|
-  row.split("").map { |str_cost| Vertex.new(cost_to_move_to: str_cost.to_i) }
+matrix = File.read(file).split("\n").map.with_index do |row, i|
+  row.split("").map.with_index do |str_cost, j|
+    Vertex.new(cost_to_move_to: str_cost.to_i, coords: [i, j])
+  end
 end
 
 matrix[0][0].minimum_cost = 0
-matrix[0][0].visited = true
+# matrix[0][0].visited = true
 
-# implement heap sort
+# puts matrix.map { |row| row.map(&:to_s).join(" ") }.join("\n")
 
-puts matrix.map { |row| row.map(&:to_s).join(" ") }.join("\n")
-
-def dijkstra(from_position, to_position, matrix) # marking visited on the vertices themselves
+def dijkstra(matrix) # marking visited on the vertices themselves
   # we're doing breadth first queue
 
-  queue = []
+  distances = {} # point => integer
+  q = PriorityQueue.new
+  start_vertex = matrix[0][0]
 
-  current_vertex = from_position
+  distances[start_vertex.coords] = 0;
 
-  while current_vertex != to_position do
-    neighbor_coords = neighbors(matrix, current_vertex.first, current_vertex.last)
+  q << start_vertex
+
+  while q.any? do
+    current = q.pop
+    puts "q is "
+    puts "#{q}"
+
+    puts "current is #{current}"
+
+    neighbors = neighbors(matrix, current)
 
     # compare risk from the current vertex to the neighbor to what neighbor already has as min
     #
 
-    curr_min_cost = matrix[current_vertex.first][current_vertex.last].minimum_cost
+    neighbors.each do |neighbor|
+      # curr_distance = distances[current.coords]
+      curr_distance = current.minimum_cost
 
-    neighbor_coords.each do |neighbor_vertex|
-      vertex_obj = matrix[neighbor_vertex.first][neighbor_vertex.last]
+      neighbor_distance = distances[neighbor.coords]
 
-      new_cost = curr_min_cost + vertex_obj.cost_to_move_to
+      new_cost = curr_distance + neighbor.cost_to_move_to
 
-      if vertex_obj.minimum_cost > new_cost
-        vertex_obj.minimum_cost = new_cost
-      end
-
-      if !vertex_obj.visted?
-        queue << neighbor_vertex
+      if (
+          neighbor_distance.nil? || (
+            curr_distance &&
+            (new_cost < neighbor.minimum_cost)
+          ))
+        distances[neighbor.coords] = new_cost
+        neighbor.minimum_cost = (curr_distance + neighbor.cost_to_move_to)
+        q << neighbor
       end
     end
   end
+
+  distances
 end
+
+def find_shortest_path(matrix, destination)
+  distances = dijkstra(matrix)
+
+  shortest = distances[destination.coords]
+
+  puts "shortest distance to destination is #{shortest}"
+end
+
+row_count = matrix.length
+col_count = matrix.first.length
+
+target = matrix[(row_count - 1)][(col_count - 1)]
+
+find_shortest_path(matrix, target)
