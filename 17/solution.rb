@@ -167,8 +167,8 @@ def lands_in_target?(x_velocity, y_velocity)
   lands_in_target
 end
 
-def check_for_ys(x_velocity)
-  test_y = 500
+def check_for_ys(x_velocity, max_y = 153)
+  test_y = max_y
   found_it = false
 
   while (!found_it && test_y > 0) do
@@ -183,8 +183,55 @@ def check_for_ys(x_velocity)
   test_y
 end
 
-puts check_for_ys(15) # 153
+# puts check_for_ys(15) # 153 PART ONE
 # x was the minimum x
-#
 # highest y position 11781
+
+# part 2
+#
+# I think I want to do something similar, but this time find the max x
+
+puts min_starting_x_for_distance(161) # 18
+
+# check all of the y possibilities for x between 16 and 18
+#
+
+def check_for_all_ys(x_velocity, max_y, min_y)
+  max = max_y
+  min = min_y
+  ys = []
+
+  test_y = max
+
+  while (test_y > min) do
+    puts "testing"
+    if lands_in_target?(x_velocity, test_y)
+      ys << test_y
+    else
+      test_y -= 1
+    end
+  end
+
+  ys
+end
+
+velocities = [[15, 153]]
+
+latest_min_y = -308
+latest_max_y = 153
+
+(16..164).each do |start_x|
+  max_y = check_for_ys(start_x, latest_max_y)
+
+  check_for_all_ys(start_x, max_y, latest_min_y).map do |y|
+    velocities << [start_x, y]
+  end
+end
+
+puts "count is"
+puts "#{velocities.uniq.count}"
+
+# no the max x could be 164
+
+
 
