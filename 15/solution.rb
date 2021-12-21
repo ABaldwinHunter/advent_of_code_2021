@@ -9,8 +9,8 @@ require_relative './vertex.rb'
 require_relative './big_grid.rb'
 
 
-file = 'sample.txt'
-# file = 'input.txt'
+# file = 'sample.txt'
+file = 'input.txt'
 
 # part one
 #
@@ -55,8 +55,4 @@ col_count = matrix.first.length
 
 target = matrix[(row_count - 1)][(col_count - 1)]
 
-require 'pry'; binding.pry
-
 find_shortest_path(matrix, target)
-
-# 200 is too low
