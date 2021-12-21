@@ -29,8 +29,8 @@ scores = {
 }
 
 die_rolls = 0
-player_1_position = 4 # sample
-player_2_position = 8
+player_1_position = 6 # 4 # sample
+player_2_position = 1 # 8 # sample
 last_die_roll = 0
 
 while true do
