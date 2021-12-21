@@ -76,3 +76,16 @@ puts "scores are #{scores.values}"
 answer = die_rolls * (scores.values.detect { |v| v < 1000 })
 
 puts "answer is #{answer}"
+
+
+# part 2 - universe
+#
+# so, even though the die has three possibilities, 1-2-3, and there are 3 rolls, it's really just
+# the sum of those three that matters. so the sum possibilities are
+# [(111), (112), 113,  122, 123, 133, 222, 223, 233, 333
+#
+# 3, 4, 5, 5, 6, 7, 6, 7, 7, 8, 9
+#
+# 3, 4, 5, 6, 7, 8, 9 # possible total die rolls
+#
+# although maybe still the universe splits each die roll, so maybe that doesn't help
