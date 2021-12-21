@@ -234,4 +234,3 @@ puts "#{velocities.uniq.count}"
 # no the max x could be 164
 
 
-
