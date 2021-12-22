@@ -28,6 +28,10 @@ class Instruction
     # x * y * z
     [x, y, z].max
   end
+
+  def overlaps?(instruction)
+    # TODO: if there's overlap, identify the overlapping cubes
+  end
 end
 
 instructions = File.read(file).split("\n").map do |line|
