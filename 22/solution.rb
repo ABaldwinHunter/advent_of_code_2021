@@ -4,8 +4,7 @@
 # region to start is -50, -50, -50 to 50, 50, 50
 #
 
-ON = []
-OFF = []
+cubes = {}
 
 file = 'sample.txt'
 
@@ -16,6 +15,18 @@ class Instruction
     @x_range = x_range
     @y_range = y_range
     @z_range = z_range
+  end
+
+  def number_of_cubes
+    # WIP - not sure if this quite right
+    # also need to filter out the -50 50 out of bounds here or at
+    # input instruction creation
+    x = (x_range.last - x_range.first).abs()
+    y = (y_range.last - y_range.first).abs()
+    z = (z_range.last - z_range.first).abs()
+
+    # x * y * z
+    [x, y, z].max
   end
 end
 
@@ -30,4 +41,10 @@ instructions = File.read(file).split("\n").map do |line|
   Instruction.new(on: (on == 'on'), x_range: x, y_range: y, z_range: z)
 end
 
-puts instructions.map(&:inspect)
+# puts instructions.map(&:inspect)
+
+instructions.each do |instr|
+
+
+
+end
