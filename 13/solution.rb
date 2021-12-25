@@ -39,28 +39,44 @@ before = dots.count
 puts "before fold #{before} dots are visible"
 
 def fold(coord, instruction)
-  if instruction.first == 'y'
+  x, y = coord
+  axis = instruction.first
+  number = instruction.last
+
+  if axis == 'y'
     # horizontal fold
     # x stays the same, y changes, like a mirror
 
-    x, y = coord
+    distance_to_fold = y - number
 
-    instruction_y = instruction.last
-
-    distance_to_fold = y - instruction_y
-
-    new_y = instruction_y - (distance_to_fold)
+    new_y = number - (distance_to_fold)
 
     [x, new_y]
+  elsif axis == 'x'
+    # vertical fold
+    # y stays the same, x changes, like a mirror
+    #
+
+    distance_to_fold = x - number
+
+    new_x = number - distance_to_fold
+
+    [new_x, y]
   end
 end
 
 instruction = instructions.first
-dots_to_move = dots.select { |dot| dot.last > instruction.last }
+
+# # if y
+# dots_to_move = dots.select { |dot| dot.last > instruction.last }
+
+# if x
+dots_to_move = dots.select { |dot| dot.first > instruction.last }
+
 new_dots = dots_to_move.map { |dot| fold(dot, instruction) }
-
 unmoved = dots.reject { |dot| dots_to_move.include? dot }
-
 new_coords = new_dots + unmoved
 
 puts "unique dots are #{new_coords.uniq.count}"
+
+# 736 is too low
