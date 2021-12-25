@@ -65,18 +65,77 @@ def fold(coord, instruction)
   end
 end
 
-instruction = instructions.first
+dots = dots
 
-# # if y
-# dots_to_move = dots.select { |dot| dot.last > instruction.last }
+instructions.each do |instruction|
+  if instruction.first == 'y'
+    dots_to_move = dots.select { |dot| dot.last > instruction.last }
+  else
+    dots_to_move = dots.select { |dot| dot.first > instruction.last }
+  end
 
-# if x
-dots_to_move = dots.select { |dot| dot.first > instruction.last }
+  new_dots = dots_to_move.map { |dot| fold(dot, instruction) }
+  unmoved = dots.reject { |dot| dots_to_move.include? dot }
 
-new_dots = dots_to_move.map { |dot| fold(dot, instruction) }
-unmoved = dots.reject { |dot| dots_to_move.include? dot }
-new_coords = new_dots + unmoved
+  dots = (new_dots + unmoved).uniq
+end
 
-puts "unique dots are #{new_coords.uniq.count}"
+puts "new dots count is #{dots.count}"
 
-# 736 is too low
+# draw letters
+#
+# puts dots.sort
+
+def draw(dots)
+  sorted = dots.sort_by { |dot| [dot.first, dot.last] }
+
+  start_x = sorted.first.first
+  start_y = sorted.first.last
+
+  end_x = sorted.last.first
+
+  max_x = dots.max_by { |dot| dot.first }.first
+  min_x = dots.min_by { |dot| dot.first }.first
+  max_y = dots.max_by { |dot| dot.last }.last
+  min_y = dots.min_by { |dot| dot.last }.last
+
+  current_x = min_x
+  current_y = min_y
+
+  while (current_x <= max_x) && (current_y <= max_y) do
+    # draw screen
+
+    if dots.any? { |dot| dot == [current_x, current_y] }
+      print " # "
+    else
+      print " . "
+    end
+
+    if current_x == max_x
+      print "\n"
+      current_x = min_x
+      current_y += 1
+    else
+      current_x += 1
+    end
+  end
+end
+
+draw(dots)
+ #  #  #  .  .  #  #  #  #  .  #  .  .  #  .  #  #  #  .  .  .  #  #  .  .  .  .  #  #  .  #  #  #  #  .  #  .  .  #
+ #  .  .  #  .  #  .  .  .  .  #  .  #  .  .  #  .  .  #  .  #  .  .  #  .  .  .  .  #  .  .  .  .  #  .  #  .  .  #
+ #  #  #  .  .  #  #  #  .  .  #  #  .  .  .  #  .  .  #  .  #  .  .  .  .  .  .  .  #  .  .  .  #  .  .  #  .  .  #
+ #  .  .  #  .  #  .  .  .  .  #  .  #  .  .  #  #  #  .  .  #  .  .  .  .  .  .  .  #  .  .  #  .  .  .  #  .  .  #
+ #  .  .  #  .  #  .  .  .  .  #  .  #  .  .  #  .  #  .  .  #  .  .  #  .  #  .  .  #  .  #  .  .  .  .  #  .  .  #
+ #  #  #  .  .  #  .  .  .  .  #  .  .  #  .  #  .  .  #  .  .  #  #  .  .  .  #  #  .  .  #  #  #  #  .  .  #  #  .
+
+
+
+
+
+
+
+# BFKRCJZU
+#
+#
+#
